@@ -14,6 +14,8 @@ defmodule TicTacToe.Application do
       TicTacToeWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: TicTacToe.PubSub},
+      # Start the Game Cache (DynamicSupervisor)
+      TicTacToe.Game.Cache,
       # Start the Endpoint (http/https)
       TicTacToeWeb.Endpoint
       # Start a worker by calling: TicTacToe.Worker.start_link(arg)
