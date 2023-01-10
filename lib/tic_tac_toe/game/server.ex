@@ -3,7 +3,11 @@ defmodule TicTacToe.Game.Server do
   alias Phoenix.PubSub
 
   def start_link(room_id) do
-    GenServer.start_link(__MODULE__, room_id)
+    GenServer.start_link(__MODULE__, room_id, name: via_tuple(room_id))
+  end
+
+  def via_tuple(room_id) do
+    TicTacToe.Registry.via_tuple({__MODULE__, room_id})
   end
 
   @impl true

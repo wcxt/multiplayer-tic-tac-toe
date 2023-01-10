@@ -14,6 +14,8 @@ defmodule TicTacToe.Application do
       TicTacToeWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: TicTacToe.PubSub},
+      # Start the App registry
+      TicTacToe.Registry,
       # Start the Game Cache (DynamicSupervisor)
       TicTacToe.Game.Cache,
       # Start the Endpoint (http/https)
