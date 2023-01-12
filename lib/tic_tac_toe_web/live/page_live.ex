@@ -1,7 +1,7 @@
 defmodule TicTacToeWeb.PageLive do
-  alias TicTacToe.Game.Server
   use Phoenix.LiveView
   require Logger
+  alias TicTacToe.Game.Server
 
   @impl true
   def mount(_params, _session, socket) do
@@ -23,12 +23,18 @@ defmodule TicTacToeWeb.PageLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="grid h-screen place-items-center">
-      <div class="grid w-72 h-72 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2 bg-white">
+    <div class="grid h-screen place-items-center bg-gray-100">
+      <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
         <%= for {index, value} <- @game do %>
-          <div phx-click="move" phx-value-id={index} class="rounded-lg bg-gray-200">
+          <div phx-click="move" phx-value-id={index} class="rounded-xl bg-white shadow-md">
             <%= if value != nil do %>
-              <%= value %>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                  <path d="M17 7L7 17M7 7L17 17" class="stroke-red-300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </g>
+              </svg>
             <% end %>
           </div>
         <% end %>
