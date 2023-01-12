@@ -1,4 +1,5 @@
 defmodule TicTacToeWeb.PageLive do
+  alias TicTacToe.Game.Server
   use Phoenix.LiveView
   require Logger
 
@@ -13,6 +14,7 @@ defmodule TicTacToeWeb.PageLive do
     new =
       socket
       |> assign(:server, pid)
+      |> assign(:room_id, 1)
       |> assign(:game, Map.from_keys(Enum.to_list(0..8), nil))
 
     {:ok, new}
@@ -38,8 +40,14 @@ defmodule TicTacToeWeb.PageLive do
   @impl true
   def handle_event("move", %{"id" => id}, socket) do
     {id, _} = Integer.parse(id)
-    Logger.debug("LiveView Event: move", id)
+    # for now client state is updated only by server
+    Server.move(socket.assigns.room_id, id)
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:update, game}, socket) do
+    {:noreply, assign(socket, :game, game)}
   end
 end
