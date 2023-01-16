@@ -2,8 +2,11 @@ defmodule TicTacToe.Game.Server do
   use GenServer, restart: :temporary
   alias Phoenix.PubSub
 
+  defstruct game: nil,
+            players: []
+
   def start_link(room_id) do
-    GenServer.start_link(__MODULE__, room_id, name: via_tuple(room_id))
+    GenServer.start_link(__MODULE__, nil, name: via_tuple(room_id))
   end
 
   defp via_tuple(room_id) do
@@ -15,15 +18,24 @@ defmodule TicTacToe.Game.Server do
     PubSub.broadcast(TicTacToe.PubSub, "room:1", {:update, game})
   end
 
-  @impl true
-  def init(room_id) do
-    PubSub.subscribe(TicTacToe.PubSub, "room:#{room_id}")
-    {:ok, Map.from_keys(Enum.to_list(0..8), nil)}
+  def join(room_id, id) do
+    GenServer.call(via_tuple(room_id), {:join, %{id: id}})
   end
 
   @impl true
-  def handle_call({:move, %{id: id}}, _, game) do
-    game = Map.replace(game, id, :X)
-    {:reply, game, game}
+  def init(_) do
+    {:ok, %__MODULE__{game: Map.from_keys(Enum.to_list(0..8), nil)}}
+  end
+
+  @impl true
+  def handle_call({:move, %{id: id}}, _, state) do
+    game = Map.replace(state.game, id, :X)
+    {:reply, game, %__MODULE__{state | game: game}}
+  end
+
+  @impl true
+  def handle_call({:join, %{id: id}}, _, state) do
+    players = [id | state.players]
+    {:reply, players, %__MODULE__{state | players: players}}
   end
 end

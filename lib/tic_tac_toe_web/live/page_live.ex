@@ -8,7 +8,7 @@ defmodule TicTacToeWeb.PageLive do
     # subcribes to message queue of this room
     Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:1")
     # creates game server that manages logic and socket communication
-    pid = TicTacToe.Game.Cache.join(1)
+    pid = TicTacToe.Game.Cache.get(1)
     Logger.info("LiveView: Joined game: id: #{1} pid: #{inspect(pid)}")
 
     new =

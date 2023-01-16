@@ -7,7 +7,7 @@ defmodule TicTacToe.Game.Cache do
     DynamicSupervisor.child_spec(name: __MODULE__)
   end
 
-  def join(room_id) do
+  def get(room_id) do
     case DynamicSupervisor.start_child(__MODULE__, {TicTacToe.Game.Server, room_id}) do
       {:ok, pid} -> pid
       {:error, {:already_started, pid}} -> pid
