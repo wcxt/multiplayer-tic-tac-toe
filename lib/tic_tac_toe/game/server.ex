@@ -3,7 +3,8 @@ defmodule TicTacToe.Game.Server do
   alias Phoenix.PubSub
 
   defstruct game: nil,
-            players: []
+            players: [],
+            turn: nil
 
   def start_link(room_id) do
     GenServer.start_link(__MODULE__, nil, name: via_tuple(room_id))
@@ -22,6 +23,10 @@ defmodule TicTacToe.Game.Server do
     GenServer.call(via_tuple(room_id), {:join, %{id: id}})
   end
 
+  def disconnect(room_id, id) do
+    GenServer.call(via_tuple(room_id), {:disconnect, %{id: id}})
+  end
+
   @impl true
   def init(_) do
     {:ok, %__MODULE__{game: Map.from_keys(Enum.to_list(0..8), nil)}}
@@ -36,6 +41,12 @@ defmodule TicTacToe.Game.Server do
   @impl true
   def handle_call({:join, %{id: id}}, _, state) do
     players = [id | state.players]
+    {:reply, players, %__MODULE__{state | players: players}}
+  end
+
+  @impl true
+  def handle_call({:disconnect, %{id: id}}, _, state) do
+    players = List.delete(state.players, id)
     {:reply, players, %__MODULE__{state | players: players}}
   end
 end

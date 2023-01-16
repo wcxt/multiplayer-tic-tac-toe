@@ -5,15 +5,17 @@ defmodule TicTacToeWeb.PageLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    # subcribes to message queue of this room
     Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:1")
-    # creates game server that manages logic and socket communication
-    pid = TicTacToe.Game.Cache.get(1)
-    Logger.info("LiveView: Joined game: id: #{1} pid: #{inspect(pid)}")
+    # Just to ensure game server exist
+    TicTacToe.Game.Cache.get(1)
+
+    player_id = :rand.uniform()
+    Server.join(1, player_id)
+    Logger.info("LiveView: Joined game: id: #{1}")
 
     new =
       socket
-      |> assign(:server, pid)
+      |> assign(:player_id, player_id)
       |> assign(:room_id, 1)
       |> assign(:game, Map.from_keys(Enum.to_list(0..8), nil))
 
@@ -55,5 +57,10 @@ defmodule TicTacToeWeb.PageLive do
   @impl true
   def handle_info({:update, game}, socket) do
     {:noreply, assign(socket, :game, game)}
+  end
+
+  @impl true
+  def terminate(_, socket) do
+    Server.disconnect(socket.assigns.room_id, socket.assigns.player_id)
   end
 end
