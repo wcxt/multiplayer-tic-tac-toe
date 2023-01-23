@@ -5,27 +5,35 @@ defmodule TicTacToeWeb.PageLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:1")
-    # Just to ensure game server exist
-    TicTacToe.Game.Cache.get(1)
+    case connected?(socket) do
+      true ->
+        Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:1")
+        # Just to ensure game server exist
+        TicTacToe.Game.Cache.get(1)
 
-    player_id = :rand.uniform()
-    Server.join(1, player_id)
-    Logger.info("LiveView: Joined game: id: #{1}")
+        player_id = :rand.uniform()
+        Server.join(1, player_id)
+        Logger.info("LiveView: Joined game: id: #{1}")
 
-    new =
-      socket
-      |> assign(:player_id, player_id)
-      |> assign(:room_id, 1)
-      |> assign(:game, Map.from_keys(Enum.to_list(0..8), nil))
+        new =
+          socket
+          |> assign(:is_ready, false)
+          |> assign(:player_id, player_id)
+          |> assign(:room_id, 1)
+          |> assign(:game, Map.from_keys(Enum.to_list(0..8), nil))
 
-    {:ok, new}
+        {:ok, new}
+
+      false ->
+        {:ok, assign(socket, :is_ready, false)}
+    end
   end
 
   @impl true
   def render(assigns) do
     ~H"""
     <div class="grid h-screen place-items-center bg-gray-100">
+      <%= if @is_ready do %>
       <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
         <%= for {index, value} <- @game do %>
           <div phx-click="move" phx-value-id={index} class="rounded-xl bg-white shadow-md">
@@ -41,6 +49,7 @@ defmodule TicTacToeWeb.PageLive do
           </div>
         <% end %>
       </div>
+      <% end %>
     </div>
     """
   end
@@ -49,7 +58,7 @@ defmodule TicTacToeWeb.PageLive do
   def handle_event("move", %{"id" => id}, socket) do
     {id, _} = Integer.parse(id)
     # for now client state is updated only by server
-    Server.move(socket.assigns.room_id, id)
+    Server.move(socket.assigns.room_id, socket.assigns.player_id, id)
 
     {:noreply, socket}
   end
@@ -57,6 +66,11 @@ defmodule TicTacToeWeb.PageLive do
   @impl true
   def handle_info({:update, game}, socket) do
     {:noreply, assign(socket, :game, game)}
+  end
+
+  @impl true
+  def handle_info({:ready, _turn}, socket) do
+    {:noreply, assign(socket, :is_ready, true)}
   end
 
   @impl true
