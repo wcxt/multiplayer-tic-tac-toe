@@ -49,6 +49,12 @@ defmodule TicTacToeWeb.PageLive do
           </div>
         <% end %>
       </div>
+      <% else %>
+        <div class="flex gap-4">
+        <div class="w-5 h-5 rounded- bg-gray-600 radius-xl animate-[loader_1.5s_infinite_100ms]"></div>
+        <div class="w-5 h-5 bg-red-300 radius-xl animate-[loader_1.5s_infinite_300ms]"></div>
+        <div class="w-5 h-5 bg-gray-600 radius-xl animate-[loader_1.5s_infinite_500ms]"></div>
+        </div>
       <% end %>
     </div>
     """
