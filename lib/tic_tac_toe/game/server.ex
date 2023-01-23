@@ -77,6 +77,15 @@ defmodule TicTacToe.Game.Server do
   @impl true
   def handle_call({:disconnect, %{id: id}}, _, state) do
     players = List.delete(state.players, id)
-    {:reply, players, %__MODULE__{state | players: players}}
+    PubSub.broadcast(TicTacToe.PubSub, "room:1", {:stop, nil})
+
+    {:reply, players,
+     %__MODULE__{
+       state
+       | players: players,
+         turn: nil,
+         is_ready: false,
+         game: Map.from_keys(Enum.to_list(0..8), nil)
+     }}
   end
 end

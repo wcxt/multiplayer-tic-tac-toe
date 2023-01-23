@@ -80,6 +80,16 @@ defmodule TicTacToeWeb.PageLive do
   end
 
   @impl true
+  def handle_info({:stop, _turn}, socket) do
+    new =
+      socket
+      |> assign(:game, Map.from_keys(Enum.to_list(0..8), nil))
+      |> assign(:is_ready, false)
+
+    {:noreply, new}
+  end
+
+  @impl true
   def terminate(_, socket) do
     Server.disconnect(socket.assigns.room_id, socket.assigns.player_id)
   end
