@@ -2,7 +2,7 @@ defmodule TicTacToe.Game.Server do
   use GenServer, restart: :temporary
   alias Phoenix.PubSub
 
-  defstruct game: nil,
+  defstruct board: nil,
             players: [],
             turn: nil,
             is_ready: false
@@ -29,26 +29,26 @@ defmodule TicTacToe.Game.Server do
 
   @impl true
   def init(_) do
-    {:ok, %__MODULE__{game: Map.from_keys(Enum.to_list(0..8), nil)}}
+    {:ok, %__MODULE__{board: Map.from_keys(Enum.to_list(0..8), nil)}}
   end
 
   @impl true
   def handle_call({:move, %{id: id, player_id: player_id}}, _, state) do
     case state.turn do
       ^player_id ->
-        game = Map.replace(state.game, id, :X)
+        board = Map.replace(state.board, id, :X)
         new_turn = Enum.find_value(state.players, nil, fn x -> if x != state.turn, do: x end)
-        PubSub.broadcast(TicTacToe.PubSub, "room:1", {:update, game})
+        broadcast({:update, board})
 
-        {:reply, game,
+        {:reply, board,
          %__MODULE__{
            state
-           | game: game,
+           | board: board,
              turn: new_turn
          }}
 
       _ ->
-        {:reply, state.game, state}
+        {:reply, state.board, state}
     end
   end
 
@@ -58,16 +58,9 @@ defmodule TicTacToe.Game.Server do
 
     case length(players) do
       2 ->
-        turn = Enum.random(players)
-        PubSub.broadcast(TicTacToe.PubSub, "room:1", {:ready, turn})
-
-        {:reply, players,
-         %__MODULE__{
-           state
-           | players: players,
-             turn: Enum.random(players),
-             is_ready: true
-         }}
+        broadcast({:ready, nil})
+        new_state = Map.put(state, :players, players)
+        {:reply, players, start_game(new_state)}
 
       _ ->
         {:reply, players, %__MODULE__{state | players: players}}
@@ -77,15 +70,22 @@ defmodule TicTacToe.Game.Server do
   @impl true
   def handle_call({:disconnect, %{id: id}}, _, state) do
     players = List.delete(state.players, id)
-    PubSub.broadcast(TicTacToe.PubSub, "room:1", {:stop, nil})
+    new_state = Map.put(state, :players, players)
+    broadcast({:stop, nil})
 
-    {:reply, players,
-     %__MODULE__{
-       state
-       | players: players,
-         turn: nil,
-         is_ready: false,
-         game: Map.from_keys(Enum.to_list(0..8), nil)
-     }}
+    {:reply, players, reset_game(new_state)}
+  end
+
+  defp broadcast(message) do
+    PubSub.broadcast(TicTacToe.PubSub, "room:1", message)
+  end
+
+  defp reset_game(state) do
+    board = Map.from_keys(Enum.to_list(0..8), nil)
+    %__MODULE__{state | turn: nil, is_ready: false, board: board}
+  end
+
+  defp start_game(state) do
+    %__MODULE__{state | turn: Enum.random(state.players), is_ready: true}
   end
 end
