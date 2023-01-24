@@ -2,8 +2,10 @@ defmodule TicTacToe.Game.Server do
   use GenServer, restart: :temporary
   alias Phoenix.PubSub
 
+  @possible_letters [:X, :O]
+
   defstruct board: nil,
-            players: [],
+            players: %{},
             turn: nil,
             is_ready: false
 
@@ -15,8 +17,8 @@ defmodule TicTacToe.Game.Server do
     TicTacToe.Registry.via_tuple({__MODULE__, room_id})
   end
 
-  def move(room_id, player_id, id) do
-    GenServer.call(via_tuple(room_id), {:move, %{player_id: player_id, id: id}})
+  def move(room_id, player_id, square) do
+    GenServer.call(via_tuple(room_id), {:move, %{id: player_id, square: square}})
   end
 
   def join(room_id, id) do
@@ -33,30 +35,23 @@ defmodule TicTacToe.Game.Server do
   end
 
   @impl true
-  def handle_call({:move, %{id: id, player_id: player_id}}, _, state) do
-    case state.turn do
-      ^player_id ->
-        board = Map.replace(state.board, id, :X)
-        new_turn = Enum.find_value(state.players, nil, fn x -> if x != state.turn, do: x end)
+  def handle_call({:move, %{square: square, id: id}}, _, state) do
+    case current_turn?(state, id) do
+      true ->
+        board = Map.replace(state.board, square, state.players[id])
         broadcast({:update, board})
+        {:reply, board, make_move(state, board)}
 
-        {:reply, board,
-         %__MODULE__{
-           state
-           | board: board,
-             turn: new_turn
-         }}
-
-      _ ->
+      false ->
         {:reply, state.board, state}
     end
   end
 
   @impl true
   def handle_call({:join, %{id: id}}, _, state) do
-    players = [id | state.players]
+    players = Map.put(state.players, id, get_available_letter(state))
 
-    case length(players) do
+    case Enum.count(players) do
       2 ->
         broadcast({:ready, nil})
         new_state = Map.put(state, :players, players)
@@ -69,7 +64,7 @@ defmodule TicTacToe.Game.Server do
 
   @impl true
   def handle_call({:disconnect, %{id: id}}, _, state) do
-    players = List.delete(state.players, id)
+    players = Map.delete(state.players, id)
     new_state = Map.put(state, :players, players)
     broadcast({:stop, nil})
 
@@ -86,6 +81,21 @@ defmodule TicTacToe.Game.Server do
   end
 
   defp start_game(state) do
-    %__MODULE__{state | turn: Enum.random(state.players), is_ready: true}
+    %__MODULE__{state | turn: Enum.random(@possible_letters), is_ready: true}
+  end
+
+  defp opposite_letter(:X), do: :O
+  defp opposite_letter(:O), do: :X
+
+  defp current_turn?(state, id) do
+    state.turn == state.players[id]
+  end
+
+  defp make_move(state, board) do
+    %__MODULE__{state | board: board, turn: opposite_letter(state.turn)}
+  end
+
+  defp get_available_letter(state) do
+    Enum.random(@possible_letters -- Map.values(state.players))
   end
 end
