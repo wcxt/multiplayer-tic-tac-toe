@@ -7,19 +7,19 @@ defmodule TicTacToeWeb.PageLive do
   def mount(_params, _session, socket) do
     case connected?(socket) do
       true ->
-        Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:1")
         # Just to ensure game server exist
-        TicTacToe.Game.Cache.get(1)
+        player = :rand.uniform()
+        room_id = TicTacToe.Lobby.enqueue(player)
 
-        player_id = :rand.uniform()
-        Server.join(1, player_id)
-        Logger.info("LiveView: Joined game: id: #{1}")
+        Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:#{room_id}")
+        Server.join(room_id, player)
+        Logger.info("LiveView: Joined game: id: #{room_id}")
 
         new =
           socket
           |> assign(:is_ready, false)
-          |> assign(:player_id, player_id)
-          |> assign(:room_id, 1)
+          |> assign(:player_id, player)
+          |> assign(:room_id, room_id)
           |> assign(:game, Map.from_keys(Enum.to_list(0..8), nil))
 
         {:ok, new}

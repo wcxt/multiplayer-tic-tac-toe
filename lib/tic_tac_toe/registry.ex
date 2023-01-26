@@ -14,4 +14,8 @@ defmodule TicTacToe.Registry do
   def lookup(key) do
     Registry.lookup(__MODULE__, key)
   end
+
+  def select(spec) do
+    Registry.select(__MODULE__, spec)
+  end
 end

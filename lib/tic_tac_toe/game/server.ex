@@ -7,10 +7,11 @@ defmodule TicTacToe.Game.Server do
   defstruct board: nil,
             players: %{},
             turn: nil,
-            is_ready: false
+            is_ready: false,
+            id: nil
 
   def start_link(room_id) do
-    GenServer.start_link(__MODULE__, nil, name: via_tuple(room_id))
+    GenServer.start_link(__MODULE__, room_id, name: via_tuple(room_id))
   end
 
   defp via_tuple(room_id) do
@@ -29,9 +30,13 @@ defmodule TicTacToe.Game.Server do
     GenServer.call(via_tuple(room_id), {:disconnect, %{id: id}})
   end
 
+  def is_open?(room_id) do
+    GenServer.call(via_tuple(room_id), {:is_open})
+  end
+
   @impl true
-  def init(_) do
-    {:ok, %__MODULE__{board: Map.from_keys(Enum.to_list(0..8), nil)}}
+  def init(room_id) do
+    {:ok, %__MODULE__{board: Map.from_keys(Enum.to_list(0..8), nil), id: room_id}}
   end
 
   @impl true
@@ -39,7 +44,7 @@ defmodule TicTacToe.Game.Server do
     case current_turn?(state, id) do
       true ->
         board = Map.replace(state.board, square, state.players[id])
-        broadcast({:update, board})
+        broadcast(state.id, {:update, board})
         {:reply, board, make_move(state, board)}
 
       false ->
@@ -53,12 +58,12 @@ defmodule TicTacToe.Game.Server do
 
     case Enum.count(players) do
       2 ->
-        broadcast({:ready, nil})
+        broadcast(state.id, {:ready, nil})
         new_state = Map.put(state, :players, players)
-        {:reply, players, start_game(new_state)}
+        {:reply, state.id, start_game(new_state)}
 
       _ ->
-        {:reply, players, %__MODULE__{state | players: players}}
+        {:reply, state.id, %__MODULE__{state | players: players}}
     end
   end
 
@@ -66,13 +71,21 @@ defmodule TicTacToe.Game.Server do
   def handle_call({:disconnect, %{id: id}}, _, state) do
     players = Map.delete(state.players, id)
     new_state = Map.put(state, :players, players)
-    broadcast({:stop, nil})
+    broadcast(state.id, {:stop, nil})
 
-    {:reply, players, reset_game(new_state)}
+    {:reply, state.id, reset_game(new_state)}
   end
 
-  defp broadcast(message) do
-    PubSub.broadcast(TicTacToe.PubSub, "room:1", message)
+  @impl true
+  def handle_call({:is_open}, _, state) do
+    case Enum.count(state.players) do
+      2 -> {:reply, false, state}
+      _ -> {:reply, true, state}
+    end
+  end
+
+  defp broadcast(id, message) do
+    PubSub.broadcast(TicTacToe.PubSub, "room:#{id}", message)
   end
 
   defp reset_game(state) do
