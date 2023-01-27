@@ -18,4 +18,8 @@ defmodule TicTacToe.Registry do
   def select(spec) do
     Registry.select(__MODULE__, spec)
   end
+
+  def keys(pid) do
+    Registry.keys(__MODULE__, pid)
+  end
 end

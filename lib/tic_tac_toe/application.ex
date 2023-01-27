@@ -17,7 +17,7 @@ defmodule TicTacToe.Application do
       # Start the App registry
       TicTacToe.Registry,
       # Start the Game Cache (DynamicSupervisor)
-      TicTacToe.Game.Cache,
+      TicTacToe.Game.Supervisor,
       # Start the Endpoint (http/https)
       TicTacToeWeb.Endpoint
       # Start a worker by calling: TicTacToe.Worker.start_link(arg)

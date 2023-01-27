@@ -18,6 +18,13 @@ defmodule TicTacToe.Game.Server do
     TicTacToe.Registry.via_tuple({__MODULE__, room_id})
   end
 
+  def id(pid) do
+    case TicTacToe.Registry.keys(pid) do
+      [{_, room_id} | _] -> room_id
+      _ -> nil
+    end
+  end
+
   def move(room_id, player_id, square) do
     GenServer.call(via_tuple(room_id), {:move, %{id: player_id, square: square}})
   end

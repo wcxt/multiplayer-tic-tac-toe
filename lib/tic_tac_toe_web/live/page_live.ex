@@ -9,7 +9,7 @@ defmodule TicTacToeWeb.PageLive do
       true ->
         # Just to ensure game server exist
         player = :rand.uniform()
-        room_id = TicTacToe.Lobby.enqueue(player)
+        room_id = TicTacToe.MatchMaker.get()
 
         Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:#{room_id}")
         Server.join(room_id, player)
