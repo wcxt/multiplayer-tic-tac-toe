@@ -1,15 +1,15 @@
-defmodule TicTacToeWeb.PageLive do
+defmodule TicTacToeWeb.GameLive do
   use Phoenix.LiveView
   require Logger
   alias TicTacToe.Game.Server
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(%{"id" => room_id}, _session, socket) do
     case connected?(socket) do
       true ->
         # Just to ensure game server exist
         player = :rand.uniform()
-        room_id = TicTacToe.MatchMaker.get()
+        {room_id, _} = Float.parse(room_id)
 
         Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:#{room_id}")
         Server.join(room_id, player)
