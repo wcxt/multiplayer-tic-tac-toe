@@ -87,17 +87,17 @@ defmodule TicTacToeWeb.GameLive do
   end
 
   @impl true
-  def handle_info({:update, game}, socket) do
-    {:noreply, assign(socket, :game, game)}
+  def handle_info({:update, %{board: board}}, socket) do
+    {:noreply, assign(socket, :game, board)}
   end
 
   @impl true
-  def handle_info({:ready, _}, socket) do
+  def handle_info({:start}, socket) do
     {:noreply, assign(socket, :is_ready, true)}
   end
 
   @impl true
-  def handle_info({:stop, _}, socket) do
+  def handle_info({:done}, socket) do
     new =
       socket
       |> assign(:game, Map.from_keys(Enum.to_list(0..8), nil))
@@ -108,6 +108,6 @@ defmodule TicTacToeWeb.GameLive do
 
   @impl true
   def terminate(_, socket) do
-    Server.disconnect(socket.assigns.room_id, socket.assigns.player_id)
+    Server.leave(socket.assigns.room_id, socket.assigns.player_id)
   end
 end
