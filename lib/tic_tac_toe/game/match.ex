@@ -78,7 +78,7 @@ defmodule TicTacToe.Game.Match do
   end
 
   defp available_symbols(match) do
-    @symbols -- Map.keys(match.players)
+    @symbols -- Map.values(match.players)
   end
 
   defp opposite_symbol(:X), do: :O
