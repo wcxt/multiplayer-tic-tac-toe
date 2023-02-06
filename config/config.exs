@@ -7,8 +7,8 @@
 # General application configuration
 import Config
 
-config :tic_tac_toe,
-  ecto_repos: [TicTacToe.Repo]
+# config :tic_tac_toe,
+#  ecto_repos: [TicTacToe.Repo]
 
 # Configures the endpoint
 config :tic_tac_toe, TicTacToeWeb.Endpoint,
