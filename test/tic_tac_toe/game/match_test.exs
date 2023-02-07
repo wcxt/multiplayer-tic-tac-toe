@@ -51,4 +51,48 @@ defmodule TicTacToe.Game.MatchTest do
       assert false == Match.is_open?(new)
     end
   end
+
+  describe "Match.move/3" do
+    setup do
+      match =
+        Match.new(1)
+        |> Match.join(1)
+        |> Match.join(2)
+
+      {:ok, %{match: match}}
+    end
+
+    test "returns match with changed board", %{match: new} do
+      expected_symbol = new.turn
+      assert %Match{board: %{0 => ^expected_symbol}} = Match.move(new, 0, new.turn)
+    end
+
+    test "return unchanged board when the pos isn't nil", %{match: new} do
+      expected_symbol = new.turn
+      new = Match.move(new, 0, new.turn)
+
+      assert %Match{board: %{0 => ^expected_symbol}} = Match.move(new, 0, new.turn)
+    end
+
+    test "returns match with changed turn", %{match: new} do
+      expected_turn = new.turn
+      new = Match.move(new, 0, new.turn)
+
+      assert %Match{turn: ^expected_turn} = Match.move(new, 1, new.turn)
+    end
+
+    test "stops game when board winning pattern is detected", %{match: new} do
+      opposite_symbol = if new.turn == :X, do: :O, else: :X
+
+      new =
+        new
+        |> Match.move(0, new.turn)
+        |> Match.move(3, opposite_symbol)
+        |> Match.move(1, new.turn)
+        |> Match.move(4, opposite_symbol)
+        |> Match.move(2, new.turn)
+
+      assert %Match{status: :done} = new
+    end
+  end
 end
