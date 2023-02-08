@@ -21,6 +21,7 @@ defmodule TicTacToe.Game.Match do
       |> place_symbol(pos)
       |> maybe_choose_winner()
       |> change_turn()
+      |> update()
     else
       _ -> match
     end
@@ -39,10 +40,10 @@ defmodule TicTacToe.Game.Match do
   end
 
   defp place_symbol(match, pos) do
-    update(%__MODULE__{
+    %__MODULE__{
       match
       | board: Map.put(match.board, pos, match.turn)
-    })
+    }
   end
 
   defp change_turn(match) do
@@ -66,7 +67,10 @@ defmodule TicTacToe.Game.Match do
     end
   end
 
-  defp make_winner(match, symbol), do: %__MODULE__{match | winner: symbol}
+  defp make_winner(match, symbol) do
+    [id] = for {id, ^symbol} <- match.players, do: id
+    %__MODULE__{match | winner: id}
+  end
 
   defp choose_winner(match, symbol) do
     match
@@ -112,7 +116,7 @@ defmodule TicTacToe.Game.Match do
   end
 
   defp stop(match) do
-    broadcast(match.id, {:done})
+    broadcast(match.id, {:done, %{winner: match.winner}})
 
     %__MODULE__{
       match

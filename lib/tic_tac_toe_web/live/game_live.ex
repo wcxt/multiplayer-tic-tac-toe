@@ -21,6 +21,7 @@ defmodule TicTacToeWeb.GameLive do
           |> assign(:board, Map.from_keys(Enum.to_list(0..8), nil))
           |> assign(:player_id, player_id)
           |> assign(:room_id, room_id)
+          |> assign(:winner_id, nil)
 
         {:ok, new}
 
@@ -33,20 +34,23 @@ defmodule TicTacToeWeb.GameLive do
   def render(assigns) do
     ~H"""
     <div class="grid h-screen place-items-center bg-gray-100">
-      <%= if @status != :waiting do %>
-      <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
-        <%= for {index, value} <- @board do %>
-          <div phx-click="move" phx-value-square={index} class="rounded-xl bg-white shadow-md">
-            <Components.symbol value={value} id={"symbol-#{index}"} />
-          </div>
-        <% end %>
-      </div>
-      <% else %>
-        <div class="flex gap-4">
-        <div class="w-5 h-5 rounded- bg-gray-600 radius-xl animate-[loader_1.5s_infinite_100ms]"></div>
-        <div class="w-5 h-5 bg-red-300 radius-xl animate-[loader_1.5s_infinite_300ms]"></div>
-        <div class="w-5 h-5 bg-gray-600 radius-xl animate-[loader_1.5s_infinite_500ms]"></div>
+      <%= case @status do %>
+      <% :playing -> %>
+        <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
+          <%= for {index, value} <- @board do %>
+            <div phx-click="move" phx-value-square={index} class="rounded-xl bg-white shadow-md">
+              <Components.symbol value={value} id={"symbol-#{index}"} />
+            </div>
+          <% end %>
         </div>
+      <% :waiting -> %>
+        <Components.loader id={"main-loader"} />
+      <% :done -> %>
+        <%= if @winner_id == @player_id do %>
+          <h1 class="font-title text-6xl">Victory</h1>
+        <% else %>
+          <h1 class="font-title text-6xl">Defeat</h1>
+        <% end %>
       <% end %>
     </div>
     """
@@ -60,7 +64,6 @@ defmodule TicTacToeWeb.GameLive do
   end
 
   @impl true
-
   def handle_info({:update, %{board: board}}, socket) do
     {:noreply, assign(socket, :board, board)}
   end
@@ -71,11 +74,12 @@ defmodule TicTacToeWeb.GameLive do
   end
 
   @impl true
-  def handle_info({:done}, socket) do
+  def handle_info({:done, %{winner: winner}}, socket) do
     new =
       socket
       |> assign(:board, Map.from_keys(Enum.to_list(0..8), nil))
       |> assign(:status, :done)
+      |> assign(:winner_id, winner)
 
     {:noreply, new}
   end
