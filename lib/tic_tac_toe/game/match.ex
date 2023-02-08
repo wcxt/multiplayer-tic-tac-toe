@@ -19,7 +19,9 @@ defmodule TicTacToe.Game.Match do
          {:ok, _} <- check_placement(match, pos) do
       match
       |> place_symbol(pos)
+      |> maybe_choose_draw()
       |> maybe_choose_winner()
+      |> maybe_end_game()
       |> change_turn()
       |> update()
     else
@@ -55,15 +57,22 @@ defmodule TicTacToe.Game.Match do
 
   defp maybe_choose_winner(%__MODULE__{turn: turn} = match) do
     case match.board do
-      %{0 => ^turn, 1 => ^turn, 2 => ^turn} -> choose_winner(match, turn)
-      %{3 => ^turn, 4 => ^turn, 5 => ^turn} -> choose_winner(match, turn)
-      %{6 => ^turn, 7 => ^turn, 8 => ^turn} -> choose_winner(match, turn)
-      %{0 => ^turn, 3 => ^turn, 6 => ^turn} -> choose_winner(match, turn)
-      %{1 => ^turn, 4 => ^turn, 7 => ^turn} -> choose_winner(match, turn)
-      %{2 => ^turn, 5 => ^turn, 8 => ^turn} -> choose_winner(match, turn)
-      %{0 => ^turn, 4 => ^turn, 8 => ^turn} -> choose_winner(match, turn)
-      %{2 => ^turn, 4 => ^turn, 6 => ^turn} -> choose_winner(match, turn)
+      %{0 => ^turn, 1 => ^turn, 2 => ^turn} -> make_winner(match, turn)
+      %{3 => ^turn, 4 => ^turn, 5 => ^turn} -> make_winner(match, turn)
+      %{6 => ^turn, 7 => ^turn, 8 => ^turn} -> make_winner(match, turn)
+      %{0 => ^turn, 3 => ^turn, 6 => ^turn} -> make_winner(match, turn)
+      %{1 => ^turn, 4 => ^turn, 7 => ^turn} -> make_winner(match, turn)
+      %{2 => ^turn, 5 => ^turn, 8 => ^turn} -> make_winner(match, turn)
+      %{0 => ^turn, 4 => ^turn, 8 => ^turn} -> make_winner(match, turn)
+      %{2 => ^turn, 4 => ^turn, 6 => ^turn} -> make_winner(match, turn)
       _ -> match
+    end
+  end
+
+  defp maybe_choose_draw(match) do
+    case Enum.all?(Map.values(match.board), &(&1 != nil)) do
+      true -> %__MODULE__{match | winner: :draw}
+      false -> match
     end
   end
 
@@ -72,11 +81,8 @@ defmodule TicTacToe.Game.Match do
     %__MODULE__{match | winner: id}
   end
 
-  defp choose_winner(match, symbol) do
-    match
-    |> make_winner(symbol)
-    |> stop()
-  end
+  defp maybe_end_game(%__MODULE__{winner: winner} = match) when winner != nil, do: stop(match)
+  defp maybe_end_game(match), do: match
 
   def join(match, player) do
     match

@@ -48,7 +48,12 @@ defmodule TicTacToeWeb.GameLive do
         <%= if @match.winner == @player_id do %>
           <h1 class="font-title text-6xl">Victory</h1>
         <% else %>
+          <%= if @match.winner == :draw do %>
+          <h1 class="font-title text-6xl">Draw</h1>
+    
+        <% else %>
           <h1 class="font-title text-6xl">Defeat</h1>
+        <% end %>
         <% end %>
       <% end %>
     </div>
