@@ -27,12 +27,20 @@ defmodule TicTacToeWeb.GameLive do
     <div class="grid h-screen place-items-center bg-gray-100">
       <%= case @match.status do %>
       <% :playing -> %>
+        <div class="flex flex-col gap-4">
+        <section class="flex gap-2 justify-center items-center">
+        <h2 class="font-title text-4xl">Turn: </h2>
+        <div class="w-12 h-12">
+        <Components.symbol value={@match.turn} id={"turn-symbol"} />
+        </div>
+        </section>
         <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
           <%= for {index, value} <- @match.board do %>
             <div phx-click="move" phx-value-square={index} class="rounded-xl bg-white shadow-md">
               <Components.symbol value={value} id={"symbol-#{index}"} />
             </div>
           <% end %>
+        </div>
         </div>
       <% :waiting -> %>
         <Components.loader id={"main-loader"} />
