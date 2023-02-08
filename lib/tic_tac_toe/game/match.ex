@@ -105,23 +105,19 @@ defmodule TicTacToe.Game.Match do
   end
 
   defp start(match) do
-    broadcast(match.id, {:start})
-
-    %__MODULE__{
+    update(%__MODULE__{
       match
       | board: Map.from_keys(Enum.to_list(0..8), nil),
         turn: Enum.random(@symbols),
         status: :playing
-    }
+    })
   end
 
   defp stop(match) do
-    broadcast(match.id, {:done, %{winner: match.winner}})
-
-    %__MODULE__{
+    update(%__MODULE__{
       match
       | status: :done
-    }
+    })
   end
 
   defp remove_player(match, player) do
@@ -141,7 +137,19 @@ defmodule TicTacToe.Game.Match do
   defp broadcast(id, message), do: PubSub.broadcast(TicTacToe.PubSub, "room:#{id}", message)
 
   defp update(match) do
-    broadcast(match.id, {:update, %{board: match.board}})
+    broadcast(
+      match.id,
+      {:update,
+       %{
+         id: match.id,
+         board: match.board,
+         turn: match.turn,
+         players: match.players,
+         status: match.status,
+         winner: match.winner
+       }}
+    )
+
     match
   end
 end
