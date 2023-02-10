@@ -39,6 +39,16 @@ defmodule TicTacToe.Game.MatchTest do
 
       assert %Match{status: :done} = new
     end
+
+    test "returns match with changed players map when players joined" do
+      new =
+        Match.new(1)
+        |> Match.join(1)
+        |> Match.join(2)
+        |> Match.leave(1)
+
+      assert Enum.count(new.players) == 1
+    end
   end
 
   describe "Match.is_open?/1" do

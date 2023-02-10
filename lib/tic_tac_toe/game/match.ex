@@ -1,4 +1,5 @@
 defmodule TicTacToe.Game.Match do
+  require Logger
   alias Phoenix.PubSub
 
   @symbols [:X, :O]
@@ -129,7 +130,7 @@ defmodule TicTacToe.Game.Match do
   defp remove_player(match, player) do
     %__MODULE__{
       match
-      | players: Map.delete(match, player)
+      | players: Map.delete(match.players, player)
     }
   end
 
