@@ -50,11 +50,11 @@ defmodule TicTacToeWeb.GameLive do
         <% else %>
           <%= if @match.winner == :draw do %>
           <h1 class="font-title text-6xl">Draw</h1>
-    
         <% else %>
           <h1 class="font-title text-6xl">Defeat</h1>
         <% end %>
         <% end %>
+        <button phx-click="start" class="rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold">Return to menu</button>
       <% end %>
     </div>
     """

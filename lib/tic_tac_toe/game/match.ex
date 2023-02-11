@@ -11,14 +11,9 @@ defmodule TicTacToe.Game.Match do
             winner: nil,
             id: nil
 
-  def new(id),
-    do: %__MODULE__{
-      board: Map.from_keys(Enum.to_list(0..8), nil),
-      turn: Enum.random(@symbols),
-      id: id
-    }
+  def new(id), do: %__MODULE__{board: Map.from_keys(Enum.to_list(0..8), nil), id: id}
 
-  def is_open?(match), do: Enum.count(match.players) != 2
+  def is_open?(match), do: match.status == :waiting
 
   def move(match, pos, symbol) do
     with {:ok, _} <- check_turn(match, symbol),
@@ -109,6 +104,9 @@ defmodule TicTacToe.Game.Match do
     }
   end
 
+  defp maybe_start(%__MODULE__{status: :playing} = match), do: update(match)
+  defp maybe_start(%__MODULE__{status: :done} = match), do: update(match)
+
   defp maybe_start(match) do
     case Enum.count(match.players) do
       2 -> start(match)
@@ -119,7 +117,9 @@ defmodule TicTacToe.Game.Match do
   defp start(match) do
     update(%__MODULE__{
       match
-      | status: :playing
+      | board: Map.from_keys(Enum.to_list(0..8), nil),
+        turn: Enum.random(@symbols),
+        status: :playing
     })
   end
 
