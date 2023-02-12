@@ -54,7 +54,7 @@ defmodule TicTacToeWeb.GameLive do
           <h1 class="font-title text-6xl">Defeat</h1>
         <% end %>
         <% end %>
-        <button phx-click="start" class="rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold">Return to menu</button>
+        <button phx-click="return" class="rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold">Return to menu</button>
       <% end %>
     </div>
     """
@@ -65,6 +65,11 @@ defmodule TicTacToeWeb.GameLive do
     {square, _} = Integer.parse(square)
     Server.move(socket.assigns.match.id, socket.assigns.player_id, square)
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("return", _, socket) do
+    {:noreply, push_redirect(socket, to: "/")}
   end
 
   @impl true
