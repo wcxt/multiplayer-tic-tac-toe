@@ -3,13 +3,15 @@ defmodule TicTacToe.Game.Match do
   alias Phoenix.PubSub
 
   @symbols [:X, :O]
+  @turn_timeout 30_000
 
   defstruct status: :waiting,
             board: nil,
             turn: nil,
             players: %{},
             winner: nil,
-            id: nil
+            id: nil,
+            timer: nil
 
   def new(id), do: %__MODULE__{board: Map.from_keys(Enum.to_list(0..8), nil), id: id}
 
@@ -24,7 +26,6 @@ defmodule TicTacToe.Game.Match do
       |> maybe_choose_winner()
       |> maybe_end_game()
       |> change_turn()
-      |> update()
     else
       _ -> match
     end
@@ -49,11 +50,14 @@ defmodule TicTacToe.Game.Match do
     }
   end
 
-  defp change_turn(match) do
-    %__MODULE__{
+  def change_turn(match) do
+    Process.cancel_timer(match.timer)
+
+    update(%__MODULE__{
       match
-      | turn: opposite_symbol(match.turn)
-    }
+      | turn: opposite_symbol(match.turn),
+        timer: Process.send_after(self(), :turn_timeout, @turn_timeout)
+    })
   end
 
   defp maybe_choose_winner(%__MODULE__{turn: turn} = match) do
@@ -119,11 +123,14 @@ defmodule TicTacToe.Game.Match do
       match
       | board: Map.from_keys(Enum.to_list(0..8), nil),
         turn: Enum.random(@symbols),
-        status: :playing
+        status: :playing,
+        timer: Process.send_after(self(), :turn_timeout, @turn_timeout)
     })
   end
 
   defp stop(match) do
+    Process.cancel_timer(match.timer)
+
     update(%__MODULE__{
       match
       | status: :done

@@ -60,4 +60,9 @@ defmodule TicTacToe.Game.Server do
   def handle_call({:is_open}, _, match) do
     {:reply, Match.is_open?(match), match}
   end
+
+  @impl true
+  def handle_info(:turn_timeout, match) do
+    {:noreply, Match.change_turn(match)}
+  end
 end
