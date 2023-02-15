@@ -24,27 +24,45 @@ defmodule TicTacToeWeb.GameLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="grid h-screen place-items-center bg-gray-100">
+      <div class="flex flex-col w-screen h-screen bg-gray-100">
       <%= case @match.status do %>
       <% :playing -> %>
-        <div class="flex flex-col gap-4">
-        <section class="flex gap-2 justify-center items-center">
-        <h2 class="font-title text-4xl">Turn: </h2>
-        <div class="w-12 h-12">
-        <Components.symbol value={@match.turn} id={"turn-symbol"} />
-        </div>
+        <section class="flex items-center w-full border-2 p-4 border-gray-500 bg-transparent">
+          <div class="grow basis-1/3 flex gap-3 items-center">
+            <Components.account_icon />
+            <span class="font-title text-xl text-gray-600">You</span>
+          </div>
+          <div class="grow basis-1/3 font-title text-4xl text-center">
+          <%= if @match.turn == @match.players[@player_id] do %>
+            <span class={if(@match.turn == :X, do: "text-red-400", else: "text-gray-500")}>Your Turn</span>
+          <% else %>
+            <span class={if(@match.turn == :X, do: "text-red-400", else: "text-gray-500")}>Opponent Turn</span>
+          <% end %>
+          </div>
+          <div class="grow basis-1/3 flex gap-3 items-center">
+            <span class="font-title text-xl text-gray-600 ml-auto">Opponent</span>
+            <Components.account_icon />
+          </div>
         </section>
-        <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
+        <div class="grid h-full place-items-center">
+        <div class="flex flex-col gap-4">
+          <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
           <%= for {index, value} <- @match.board do %>
             <div phx-click="move" phx-value-square={index} class="rounded-xl bg-white shadow-md">
               <Components.symbol value={value} id={"symbol-#{index}"} />
             </div>
           <% end %>
+          </div>
         </div>
         </div>
       <% :waiting -> %>
+    
+        <div class="grid h-screen place-items-center">
         <Components.loader id={"main-loader"} />
+        </div>
       <% :done -> %>
+    
+        <div class="grid h-screen place-items-center">
         <%= if @match.winner == @player_id do %>
           <h1 class="font-title text-6xl">Victory</h1>
         <% else %>
@@ -55,8 +73,9 @@ defmodule TicTacToeWeb.GameLive do
         <% end %>
         <% end %>
         <button phx-click="return" class="rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold">Return to menu</button>
+        </div>
       <% end %>
-    </div>
+      </div>
     """
   end
 
