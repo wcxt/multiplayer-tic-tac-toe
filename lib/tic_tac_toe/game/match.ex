@@ -98,7 +98,14 @@ defmodule TicTacToe.Game.Match do
   def leave(match, player) do
     match
     |> remove_player(player)
+    |> maybe_auto_choose_winner()
     |> stop()
+  end
+
+  def maybe_auto_choose_winner(match) do
+    if Enum.count(match.players) == 1,
+      do: %__MODULE__{match | winner: hd(Map.keys(match.players))},
+      else: match
   end
 
   defp add_player(match, player) do
