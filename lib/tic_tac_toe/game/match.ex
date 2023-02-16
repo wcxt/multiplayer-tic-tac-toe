@@ -140,7 +140,7 @@ defmodule TicTacToe.Game.Match do
 
     update(%__MODULE__{
       match
-      | status: :done
+      | status: if(Enum.count(match.players) == 0, do: :kill, else: :done)
     })
   end
 
