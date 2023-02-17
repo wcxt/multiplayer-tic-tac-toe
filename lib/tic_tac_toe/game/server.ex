@@ -40,14 +40,12 @@ defmodule TicTacToe.Game.Server do
 
   @impl true
   def handle_call({:move, %{square: square, player: player}}, _, match) do
-    match = Match.move(match, square, match.players[player])
-    {:reply, match.status, match}
+    {:reply, :ok, Match.move(match, square, match.players[player])}
   end
 
   @impl true
   def handle_call({:join, %{player: player}}, _, match) do
-    match = Match.join(match, player)
-    {:reply, match.status, match}
+    {:reply, :ok, Match.join(match, player)}
   end
 
   @impl true
@@ -55,8 +53,8 @@ defmodule TicTacToe.Game.Server do
     match = Match.leave(match, player)
 
     case match.status do
-      :done -> {:reply, match.status, match}
-      :kill -> {:stop, :normal, match.status, match}
+      :done -> {:reply, :ok, match}
+      :kill -> {:stop, :normal, :ok, match}
     end
   end
 
