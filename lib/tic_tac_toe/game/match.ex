@@ -1,7 +1,4 @@
 defmodule TicTacToe.Game.Match do
-  require Logger
-  alias Phoenix.PubSub
-
   @symbols [:X, :O]
   @turn_timeout 30_000
 
@@ -13,156 +10,126 @@ defmodule TicTacToe.Game.Match do
             id: nil,
             timer: nil
 
-  def new(id), do: %__MODULE__{board: Map.from_keys(Enum.to_list(0..8), nil), id: id}
+  def new(id) do
+    %__MODULE__{id: id, board: Map.from_keys(Enum.to_list(0..8), nil)}
+  end
 
   def is_open?(match), do: match.status == :waiting
-
-  def move(match, pos, symbol) do
-    with {:ok, _} <- check_turn(match, symbol),
-         {:ok, _} <- check_placement(match, pos) do
-      match
-      |> place_symbol(pos)
-      |> maybe_choose_draw()
-      |> maybe_choose_winner()
-      |> maybe_end_game()
-      |> change_turn()
-    else
-      _ -> match
-    end
-  end
-
-  defp check_turn(%__MODULE__{turn: turn}, symbol) when symbol != turn,
-    do: {:error, "Incorrect turn"}
-
-  defp check_turn(match, _), do: {:ok, match}
-
-  defp check_placement(match, pos) do
-    case match.board[pos] do
-      nil -> {:ok, match}
-      _ -> {:error, "Already placed"}
-    end
-  end
-
-  defp place_symbol(match, pos) do
-    %__MODULE__{
-      match
-      | board: Map.put(match.board, pos, match.turn)
-    }
-  end
-
-  def change_turn(match) do
-    Process.cancel_timer(match.timer)
-
-    update(%__MODULE__{
-      match
-      | turn: opposite_symbol(match.turn),
-        timer: Process.send_after(self(), :turn_timeout, @turn_timeout)
-    })
-  end
-
-  defp maybe_choose_winner(%__MODULE__{turn: turn} = match) do
-    case match.board do
-      %{0 => ^turn, 1 => ^turn, 2 => ^turn} -> make_winner(match, turn)
-      %{3 => ^turn, 4 => ^turn, 5 => ^turn} -> make_winner(match, turn)
-      %{6 => ^turn, 7 => ^turn, 8 => ^turn} -> make_winner(match, turn)
-      %{0 => ^turn, 3 => ^turn, 6 => ^turn} -> make_winner(match, turn)
-      %{1 => ^turn, 4 => ^turn, 7 => ^turn} -> make_winner(match, turn)
-      %{2 => ^turn, 5 => ^turn, 8 => ^turn} -> make_winner(match, turn)
-      %{0 => ^turn, 4 => ^turn, 8 => ^turn} -> make_winner(match, turn)
-      %{2 => ^turn, 4 => ^turn, 6 => ^turn} -> make_winner(match, turn)
-      _ -> match
-    end
-  end
-
-  defp maybe_choose_draw(match) do
-    case Enum.all?(Map.values(match.board), &(&1 != nil)) do
-      true -> %__MODULE__{match | winner: :draw}
-      false -> match
-    end
-  end
-
-  defp make_winner(match, symbol) do
-    [id] = for {id, ^symbol} <- match.players, do: id
-    %__MODULE__{match | winner: id}
-  end
-
-  defp maybe_end_game(%__MODULE__{winner: winner} = match) when winner != nil, do: stop(match)
-  defp maybe_end_game(match), do: match
 
   def join(match, player) do
     match
     |> add_player(player)
-    |> maybe_start()
+    |> handle_player_change()
+    |> IO.inspect()
+    |> update()
+  end
+
+  def move(match, square, player) do
+    symbol = match.players[player]
+
+    if match.turn == symbol and match.board[square] == nil do
+      match
+      |> place_symbol(square, symbol)
+      |> change_turn()
+      |> cancel_timer()
+      |> set_timer()
+      |> check_draw()
+      |> check_winner(player)
+      |> handle_player_change()
+      |> update()
+    else
+      match
+    end
   end
 
   def leave(match, player) do
     match
     |> remove_player(player)
-    |> maybe_auto_choose_winner()
-    |> stop()
+    |> cancel_timer()
+    |> handle_player_change()
+    |> update()
   end
 
-  def maybe_auto_choose_winner(match) do
-    if Enum.count(match.players) == 1,
-      do: %__MODULE__{match | winner: hd(Map.keys(match.players))},
-      else: match
+  def change_turn(match) do
+    %__MODULE__{match | turn: opposite_symbol(match.turn)}
   end
 
-  defp add_player(match, player) do
-    %__MODULE__{
-      match
-      | players: Map.put(match.players, player, Enum.random(available_symbols(match)))
-    }
-  end
+  defp check_winner(match, player) do
+    symbol = match.players[player]
 
-  defp maybe_start(%__MODULE__{status: :playing} = match), do: update(match)
-  defp maybe_start(%__MODULE__{status: :done} = match), do: update(match)
-
-  defp maybe_start(match) do
-    case Enum.count(match.players) do
-      2 -> start(match)
+    case match.board do
+      %{0 => ^symbol, 1 => ^symbol, 2 => ^symbol} -> set_winner(match, player)
+      %{3 => ^symbol, 4 => ^symbol, 5 => ^symbol} -> set_winner(match, player)
+      %{6 => ^symbol, 7 => ^symbol, 8 => ^symbol} -> set_winner(match, player)
+      %{0 => ^symbol, 3 => ^symbol, 6 => ^symbol} -> set_winner(match, player)
+      %{1 => ^symbol, 4 => ^symbol, 7 => ^symbol} -> set_winner(match, player)
+      %{2 => ^symbol, 5 => ^symbol, 8 => ^symbol} -> set_winner(match, player)
+      %{0 => ^symbol, 4 => ^symbol, 8 => ^symbol} -> set_winner(match, player)
+      %{2 => ^symbol, 4 => ^symbol, 6 => ^symbol} -> set_winner(match, player)
       _ -> match
     end
   end
 
-  defp start(match) do
-    update(%__MODULE__{
-      match
-      | board: Map.from_keys(Enum.to_list(0..8), nil),
-        turn: Enum.random(@symbols),
-        status: :playing,
-        timer: Process.send_after(self(), :turn_timeout, @turn_timeout)
-    })
+  defp check_draw(match) do
+    if Enum.all?(Map.values(match.board), &(&1 != nil)),
+      do: set_winner(match, :draw),
+      else: match
   end
 
-  defp stop(match) do
-    Process.cancel_timer(match.timer)
+  defp play(match) do
+    %__MODULE__{match | turn: :X}
+    |> set_status(:playing)
+    |> set_timer()
+  end
 
-    update(%__MODULE__{
-      match
-      | status: if(Enum.count(match.players) == 0, do: :kill, else: :done)
-    })
+  defp stop_early(match) do
+    match
+    |> set_status(:done)
+    |> set_winner(hd(Map.keys(match.players)))
+  end
+
+  defp handle_player_change(%__MODULE__{players: players} = match) when map_size(players) == 0, do: set_status(match, :kill)
+  defp handle_player_change(%__MODULE__{status: :waiting, players: players} = match) when map_size(players) == 2, do: play(match)
+  defp handle_player_change(%__MODULE__{status: :playing, winner: winner} = match) when winner != nil, do: set_status(match, :done)
+  defp handle_player_change(%__MODULE__{status: :playing, players: players} = match) when map_size(players) < 2, do: stop_early(match)
+  defp handle_player_change(match), do: match
+
+  defp add_player(match, player) do
+    %__MODULE__{match | players: Map.put(match.players, player, Enum.random(@symbols -- Map.values(match.players)))}
   end
 
   defp remove_player(match, player) do
-    %__MODULE__{
-      match
-      | players: Map.delete(match.players, player)
-    }
+    %__MODULE__{match | players: Map.delete(match.players, player)}
   end
 
-  defp available_symbols(match) do
-    @symbols -- Map.values(match.players)
+  defp place_symbol(match, square, symbol) do
+    %__MODULE__{match | board: Map.put(match.board, square, symbol)}
+  end
+
+  defp set_winner(match, player) do
+    %__MODULE__{match | winner: player}
+  end
+
+  defp set_status(match, new_status) do
+    %__MODULE__{match | status: new_status}
+  end
+
+  defp set_timer(match) do
+    %__MODULE__{match | timer: Process.send_after(self(), :turn_timeout, @turn_timeout)}
+  end
+
+  defp cancel_timer(match) do
+    Process.cancel_timer(match.timer)
+    %__MODULE__{match | timer: nil}
   end
 
   defp opposite_symbol(:X), do: :O
   defp opposite_symbol(:O), do: :X
 
-  defp broadcast(id, message), do: PubSub.broadcast(TicTacToe.PubSub, "room:#{id}", message)
-
   defp update(match) do
-    broadcast(
-      match.id,
+    Phoenix.PubSub.broadcast(
+      TicTacToe.PubSub,
+      "room:#{match.id}",
       {:update,
        %{
          id: match.id,

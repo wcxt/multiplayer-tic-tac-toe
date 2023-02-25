@@ -40,7 +40,7 @@ defmodule TicTacToe.Game.Server do
 
   @impl true
   def handle_call({:move, %{square: square, player: player}}, _, match) do
-    {:reply, :ok, Match.move(match, square, match.players[player])}
+    {:reply, :ok, Match.move(match, square, player)}
   end
 
   @impl true
