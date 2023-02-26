@@ -1,6 +1,7 @@
 defmodule TicTacToeWeb.GameLive do
   use Phoenix.LiveView
   alias TicTacToeWeb.Components
+  alias TicTacToeWeb.Icons
   alias TicTacToe.Game.Server
 
   @impl true
@@ -29,7 +30,7 @@ defmodule TicTacToeWeb.GameLive do
       <% :playing -> %>
         <section class="flex items-center w-full border-2 p-4 border-gray-500 bg-transparent">
           <div class="grow basis-1/3 flex gap-3 items-center">
-            <Components.account_icon />
+            <Icons.account class="w-6 h-6" />
             <span class="font-title text-xl text-gray-600">You</span>
           </div>
           <div class="grow basis-1/3 font-title text-4xl text-center">
@@ -41,27 +42,25 @@ defmodule TicTacToeWeb.GameLive do
           </div>
           <div class="grow basis-1/3 flex gap-3 items-center">
             <span class="font-title text-xl text-gray-600 ml-auto">Opponent</span>
-            <Components.account_icon />
+            <Icons.account class="w-6 h-6" />
           </div>
         </section>
         <div class="grid h-full place-items-center">
         <div class="flex flex-col gap-4">
           <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
           <%= for {index, value} <- @match.board do %>
-            <div phx-click="move" phx-value-square={index} class="rounded-xl bg-white shadow-md">
-              <Components.symbol value={value} id={"symbol-#{index}"} />
-            </div>
+            <Components.square phx_click={"move"} value={value} index={index} />
           <% end %>
           </div>
         </div>
         </div>
       <% :waiting -> %>
-    
+
         <div class="grid h-screen place-items-center">
-        <Components.loader id={"main-loader"} />
+          <Components.loader id={"main-loader"} />
         </div>
       <% :done -> %>
-    
+
         <div class="grid h-screen place-items-center">
         <%= if @match.winner == @player_id do %>
           <h1 class="font-title text-6xl">Victory</h1>

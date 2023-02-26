@@ -20,7 +20,6 @@ defmodule TicTacToe.Game.Match do
     match
     |> add_player(player)
     |> handle_player_change()
-    |> IO.inspect()
     |> update()
   end
 
