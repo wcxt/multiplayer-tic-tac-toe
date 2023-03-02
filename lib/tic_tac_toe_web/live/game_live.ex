@@ -42,7 +42,7 @@ defmodule TicTacToeWeb.GameLive do
           <% end %>
           </div>
           <div class="grow basis-1/3 flex gap-3 items-center">
-            <span class="font-title text-xl text-gray-600 ml-auto">Opponent</span>
+            <span class="font-title text-xl text-gray-600 ml-auto"><%= get_opponent(@match.players, @player).name %></span>
             <Icons.account class="w-6 h-6" />
           </div>
         </section>
@@ -77,6 +77,10 @@ defmodule TicTacToeWeb.GameLive do
       <% end %>
       </div>
     """
+  end
+
+  defp get_opponent(players, curremt_player) do
+    Enum.find(Map.values(players), fn plr -> plr.id != curremt_player.id end)
   end
 
   @impl true
