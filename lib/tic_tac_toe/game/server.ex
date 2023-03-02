@@ -14,12 +14,12 @@ defmodule TicTacToe.Game.Server do
     GenServer.call(via_tuple(id), {:move, %{player: player_id, square: square}})
   end
 
-  def join(id, player_id) do
-    GenServer.call(via_tuple(id), {:join, %{player: player_id}})
+  def join(id, player) do
+    GenServer.call(via_tuple(id), {:join, %{player: player}})
   end
 
-  def leave(id, player_id) do
-    GenServer.call(via_tuple(id), {:leave, %{player: player_id}})
+  def leave(id, player) do
+    GenServer.call(via_tuple(id), {:leave, %{player: player}})
   end
 
   def is_open?(id) do

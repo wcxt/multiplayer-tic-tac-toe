@@ -24,7 +24,7 @@ defmodule TicTacToe.Game.Match do
   end
 
   def move(match, square, player) do
-    symbol = match.players[player]
+    symbol = match.players[player].symbol
 
     if match.turn == symbol and match.board[square] == nil do
       match
@@ -54,7 +54,7 @@ defmodule TicTacToe.Game.Match do
   end
 
   defp check_winner(match, player) do
-    symbol = match.players[player]
+    symbol = match.players[player].symbol
 
     case match.board do
       %{0 => ^symbol, 1 => ^symbol, 2 => ^symbol} -> set_winner(match, player)
@@ -94,19 +94,20 @@ defmodule TicTacToe.Game.Match do
   defp handle_player_change(match), do: match
 
   defp add_player(match, player) do
-    %__MODULE__{match | players: Map.put(match.players, player, Enum.random(@symbols -- Map.values(match.players)))}
+    player_with_symbol = Map.merge(player, %{symbol: Enum.random(available_symbols(match))})
+    %__MODULE__{match | players: Map.put(match.players, player.id, player_with_symbol)}
   end
 
-  defp remove_player(match, player) do
-    %__MODULE__{match | players: Map.delete(match.players, player)}
+  defp remove_player(match, player_id) do
+    %__MODULE__{match | players: Map.delete(match.players, player_id)}
   end
 
   defp place_symbol(match, square, symbol) do
     %__MODULE__{match | board: Map.put(match.board, square, symbol)}
   end
 
-  defp set_winner(match, player) do
-    %__MODULE__{match | winner: player}
+  defp set_winner(match, player_id) do
+    %__MODULE__{match | winner: player_id}
   end
 
   defp set_status(match, new_status) do
@@ -121,6 +122,9 @@ defmodule TicTacToe.Game.Match do
     Process.cancel_timer(match.timer)
     %__MODULE__{match | timer: nil}
   end
+
+  defp available_symbols(match),
+    do: @symbols -- Enum.map(match.players, fn {_, value} -> Map.get(value, :symbol) end)
 
   defp opposite_symbol(:X), do: :O
   defp opposite_symbol(:O), do: :X
