@@ -2,8 +2,8 @@ defmodule TicTacToeWeb.StartLive do
   alias TicTacToe.MatchMaker
   use Phoenix.LiveView
 
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, :form, %{name: "Guest"})}
+  def mount(_params, session, socket) do
+    {:ok, assign(socket, :form, %{name: session["username"]})}
   end
 
   def render(assigns) do
@@ -20,10 +20,6 @@ defmodule TicTacToeWeb.StartLive do
   end
 
   def handle_event("change-name", %{"name" => name}, socket) do
-    {:noreply, assign(socket, :form, %{name: name})}
-  end
-
-  def handle_event("restore-name", %{"name" => name}, socket) do
     {:noreply, assign(socket, :form, %{name: name})}
   end
 

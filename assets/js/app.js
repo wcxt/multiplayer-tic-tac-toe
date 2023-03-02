@@ -27,12 +27,8 @@ import topbar from "../vendor/topbar"
 
 let Hooks = {}
 Hooks.NameInput = {
-    mounted() {
-        if (!localStorage.getItem("username")) localStorage.setItem("username", "Guest")
-        this.pushEvent("restore-name", {name: localStorage.getItem("username")})
-    },
     updated() {
-        localStorage.setItem("username", this.el.elements.name.value)
+        fetch("/api/session?" + new URLSearchParams({username: this.el.elements.name.value}), {method: "POST"})
     }
 }
 

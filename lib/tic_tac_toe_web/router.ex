@@ -8,6 +8,7 @@ defmodule TicTacToeWeb.Router do
     plug(:put_root_layout, {TicTacToeWeb.LayoutView, :root})
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
+    plug(TicTacToeWeb.SessionDefaults)
   end
 
   pipeline :api do
@@ -22,9 +23,10 @@ defmodule TicTacToeWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", TicTacToeWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", TicTacToeWeb do
+    pipe_through :api
+    post("/session", SessionController, :set)
+  end
 
   # Enables LiveDashboard only for development
   #
