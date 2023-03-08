@@ -1,6 +1,19 @@
-defmodule TicTacToeWeb.Components do
-  use Phoenix.Component
+defmodule TicTacToeWeb.LiveHelpers do
+  import Phoenix.LiveView
+  import Phoenix.LiveView.Helpers
   alias TicTacToeWeb.Icons
+
+  def button(assigns) do
+    assigns = assigns
+      |> assign_new(:class, fn -> "" end)
+      |> assign(:rest, assigns_to_attributes(assigns))
+
+    ~H"""
+      <button class={"rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold #{@class}"} {@rest}>
+          <%= render_slot(@inner_block) %>
+      </button>
+    """
+  end
 
   def loader(assigns) do
     ~H"""

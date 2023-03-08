@@ -1,5 +1,6 @@
 defmodule TicTacToeWeb.StartLive do
   use TicTacToeWeb, :live_view
+  import TicTacToeWeb.LiveHelpers
   require Logger
   alias TicTacToe.MatchMaker
 
@@ -11,8 +12,8 @@ defmodule TicTacToeWeb.StartLive do
     ~H"""
     <p class="font-title text-8xl text-gray-600">Tic<span class="text-red-300">Tac</span>Toe</p>
     <div class="grid grid-flow-col grid-cols-3 gap-14">
-    <button phx-click="create-room" class="mb-6 rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold">Create room</button>
-    <button phx-click="play-online" class="place-self-center rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold">Online</button>
+    <.button phx-click="create-room" class="mb-6" >Create room</.button>
+    <.button phx-click="play-online" class="place-self-center" >Online</.button>
     <form id="join-form" phx-submit="join-room">
       <input name="code" placeholder="Join room" class="p-3 rounded-full shadow-lg text-center" />
     </form>

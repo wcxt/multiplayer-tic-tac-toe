@@ -1,6 +1,6 @@
 defmodule TicTacToeWeb.GameLive do
   use TicTacToeWeb, :live_view
-  alias TicTacToeWeb.Components
+  import TicTacToeWeb.LiveHelpers
   alias TicTacToeWeb.Icons
   alias TicTacToe.Game.Server
 
@@ -50,7 +50,7 @@ defmodule TicTacToeWeb.GameLive do
         <div class="flex flex-col gap-4">
           <div class="grid w-72 rounded-lg h-72 border-2 p-2 border-gray-400 grid-cols-[1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr] gap-2">
           <%= for {index, value} <- @match.board do %>
-            <Components.square phx_click={"move"} value={value} index={index} />
+            <.square phx_click={"move"} value={value} index={index} />
           <% end %>
           </div>
         </div>
@@ -58,7 +58,7 @@ defmodule TicTacToeWeb.GameLive do
       <% :waiting -> %>
 
         <div class="grid h-screen place-items-center">
-          <Components.loader id={"main-loader"} />
+          <.loader id={"main-loader"} />
         </div>
       <% :done -> %>
 
@@ -72,7 +72,7 @@ defmodule TicTacToeWeb.GameLive do
           <h1 class="font-title text-6xl">Defeat</h1>
         <% end %>
         <% end %>
-        <button phx-click="return" class="rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold">Return to menu</button>
+        <.button phx-click="return">Return to menu</.button>
         </div>
       <% end %>
       </div>
