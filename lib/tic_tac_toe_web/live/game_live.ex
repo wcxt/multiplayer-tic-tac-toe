@@ -1,5 +1,5 @@
 defmodule TicTacToeWeb.GameLive do
-  use Phoenix.LiveView
+  use TicTacToeWeb, :live_view
   alias TicTacToeWeb.Components
   alias TicTacToeWeb.Icons
   alias TicTacToe.Game.Server
@@ -26,7 +26,7 @@ defmodule TicTacToeWeb.GameLive do
   def render(assigns) do
 
     ~H"""
-      <div class="flex flex-col w-screen h-screen bg-gray-100">
+      <div class="flex flex-col">
       <%= case @match.status do %>
       <% :playing -> %>
         <section class="flex items-center w-full border-2 p-4 border-gray-500 bg-transparent">

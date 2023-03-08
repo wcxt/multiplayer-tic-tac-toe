@@ -1,15 +1,14 @@
 defmodule TicTacToeWeb.StartLive do
-  use Phoenix.LiveView
+  use TicTacToeWeb, :live_view
   require Logger
   alias TicTacToe.MatchMaker
 
-  def mount(_params, session, socket) do
+  def mount(_, session, socket) do
     {:ok, assign(socket, :form, %{name: session["username"]})}
   end
 
   def render(assigns) do
     ~H"""
-    <div class="grid h-screen place-items-center bg-gray-100">
     <p class="font-title text-8xl text-gray-600">Tic<span class="text-red-300">Tac</span>Toe</p>
     <div class="grid grid-flow-col grid-cols-3 gap-14">
     <button phx-click="create-room" class="mb-6 rounded-full bg-red-300 px-10 py-4 text-white text-2xl font-semibold">Create room</button>
@@ -22,7 +21,6 @@ defmodule TicTacToeWeb.StartLive do
       <label for="name" class="text-center text-gray-600 border-b-[1px] h-4 border-gray-600"><span class="bg-gray-100 p-2">Play as</span></label>
       <input name="name" value={@form[:name]} placeholder="Guest" class="p-3 rounded-full shadow-lg text-center" phx-debounce="500"/>
     </form>
-    </div>
     """
   end
 
@@ -31,15 +29,11 @@ defmodule TicTacToeWeb.StartLive do
   end
 
   def handle_event("play-online", _, socket) do
-    room_id = MatchMaker.get()
-
-    {:noreply, push_redirect(socket, to: "/game/#{room_id}")}
+    {:noreply, push_redirect(socket, to: "/game/#{MatchMaker.get()}")}
   end
 
   def handle_event("create-room", _, socket) do
-    room_id = MatchMaker.get()
-
-    {:noreply, push_redirect(socket, to: "/game/#{room_id}")}
+    {:noreply, push_redirect(socket, to: "/game/#{MatchMaker.get()}")}
   end
 
   def handle_event("join-room", %{"code" => code}, socket) do
