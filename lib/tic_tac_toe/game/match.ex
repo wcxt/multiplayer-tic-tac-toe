@@ -10,7 +10,9 @@ defmodule TicTacToe.Game.Match do
             id: nil,
             timer: nil
 
-  def new(id) do
+  def new(opts) do
+    id = Keyword.get(opts, :id)
+
     %__MODULE__{id: id, board: Map.from_keys(Enum.to_list(0..8), nil)}
   end
 

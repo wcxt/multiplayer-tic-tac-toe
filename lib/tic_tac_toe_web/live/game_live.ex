@@ -5,18 +5,17 @@ defmodule TicTacToeWeb.GameLive do
   alias TicTacToe.Game.Server
 
   @impl true
-  def mount(%{"id" => room_id}, session, socket) do
+  def mount(%{"id" => server_id}, session, socket) do
     player = %{id: :rand.uniform(), name: session["username"]}
-    {room_id, _} = Float.parse(room_id)
 
     if connected?(socket) do
-      Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:#{room_id}")
-      Server.join(room_id, player)
+      Phoenix.PubSub.subscribe(TicTacToe.PubSub, "room:#{server_id}")
+      Server.join(server_id, player)
     end
 
     socket =
       socket
-      |> assign(:match, %{status: :waiting, id: room_id})
+      |> assign(:match, %{status: :waiting, id: server_id})
       |> assign(:player, player)
 
     {:ok, socket}

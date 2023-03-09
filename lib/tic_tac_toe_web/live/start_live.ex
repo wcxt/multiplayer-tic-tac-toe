@@ -2,7 +2,7 @@ defmodule TicTacToeWeb.StartLive do
   use TicTacToeWeb, :live_view
   import TicTacToeWeb.LiveHelpers
   require Logger
-  alias TicTacToe.MatchMaker
+  alias TicTacToe.Game.Lobby
 
   def mount(_, session, socket) do
     {:ok, assign(socket, :form, %{name: session["username"]})}
@@ -30,11 +30,11 @@ defmodule TicTacToeWeb.StartLive do
   end
 
   def handle_event("play-online", _, socket) do
-    {:noreply, push_redirect(socket, to: "/game/#{MatchMaker.get()}")}
+    {:noreply, push_redirect(socket, to: "/game/#{Lobby.get()}")}
   end
 
   def handle_event("create-room", _, socket) do
-    {:noreply, push_redirect(socket, to: "/game/#{MatchMaker.get()}")}
+    {:noreply, push_redirect(socket, to: "/game/#{Lobby.get()}")}
   end
 
   def handle_event("join-room", %{"code" => code}, socket) do

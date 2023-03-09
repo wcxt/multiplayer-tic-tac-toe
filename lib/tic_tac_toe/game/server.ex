@@ -2,8 +2,10 @@ defmodule TicTacToe.Game.Server do
   use GenServer, restart: :temporary
   alias TicTacToe.Game.Match
 
-  def start_link(id) do
-    GenServer.start_link(__MODULE__, id, name: via_tuple(id))
+  def start_link(opts) do
+    id = Keyword.fetch!(opts, :id)
+
+    GenServer.start_link(__MODULE__, opts, name: via_tuple(id))
   end
 
   defp via_tuple(id) do
@@ -34,8 +36,8 @@ defmodule TicTacToe.Game.Server do
   end
 
   @impl true
-  def init(id) do
-    {:ok, Match.new(id)}
+  def init(opts) do
+    {:ok, Match.new(opts)}
   end
 
   @impl true

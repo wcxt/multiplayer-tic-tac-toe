@@ -7,12 +7,7 @@ defmodule TicTacToe.Game.Supervisor do
     DynamicSupervisor.child_spec(name: __MODULE__)
   end
 
-  def start_child() do
-    room_id = :rand.uniform()
-
-    case DynamicSupervisor.start_child(__MODULE__, {TicTacToe.Game.Server, room_id}) do
-      {:ok, pid} -> pid
-      {:error, {:already_started, pid}} -> pid
-    end
+  def start_child(opts) do
+    DynamicSupervisor.start_child(__MODULE__, {TicTacToe.Game.Server, opts})
   end
 end
