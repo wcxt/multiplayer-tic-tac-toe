@@ -14,21 +14,18 @@ defmodule TicTacToeWeb.GameLive do
       Server.join(room_id, player)
     end
 
-    new =
+    socket =
       socket
       |> assign(:match, %{status: :waiting, id: room_id})
       |> assign(:player, player)
 
-    {:ok, new}
+    {:ok, socket}
   end
 
   @impl true
-  def render(assigns) do
-
+  def render(%{match: %{status: :playing}} = assigns) do
     ~H"""
-      <div class="flex flex-col">
-      <%= case @match.status do %>
-      <% :playing -> %>
+      <div class="flex flex-col w-screen h-screen">
         <section class="flex items-center w-full border-2 p-4 border-gray-500 bg-transparent">
           <div class="grow basis-1/3 flex gap-3 items-center">
             <Icons.account class="w-6 h-6" />
@@ -55,27 +52,30 @@ defmodule TicTacToeWeb.GameLive do
           </div>
         </div>
         </div>
-      <% :waiting -> %>
+      </div>
+    """
+  end
 
-        <div class="grid h-screen place-items-center">
-          <.loader id={"main-loader"} />
-        </div>
-      <% :done -> %>
+  @impl true
+  def render(%{match: %{status: :waiting}} = assigns) do
+    ~H"""
+      <.loader id={"main-loader"} />
+    """
+  end
 
-        <div class="grid h-screen place-items-center">
-        <%= if @match.winner == @player.id do %>
-          <h1 class="font-title text-6xl">Victory</h1>
-        <% else %>
-          <%= if @match.winner == :draw do %>
+  @impl true
+  def render(%{match: %{status: :done}} = assigns) do
+    ~H"""
+      <%= if @match.winner == @player.id do %>
+        <h1 class="font-title text-6xl">Victory</h1>
+      <% else %>
+        <%= if @match.winner == :draw do %>
           <h1 class="font-title text-6xl">Draw</h1>
         <% else %>
           <h1 class="font-title text-6xl">Defeat</h1>
         <% end %>
-        <% end %>
-        <.button phx-click="return">Return to menu</.button>
-        </div>
       <% end %>
-      </div>
+      <.button phx-click="return">Return to menu</.button>
     """
   end
 
@@ -87,6 +87,7 @@ defmodule TicTacToeWeb.GameLive do
   def handle_event("move", %{"square" => square}, socket) do
     {square, _} = Integer.parse(square)
     Server.move(socket.assigns.match.id, socket.assigns.player.id, square)
+
     {:noreply, socket}
   end
 
