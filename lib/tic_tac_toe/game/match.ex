@@ -45,7 +45,6 @@ defmodule TicTacToe.Game.Match do
     end
   end
 
-  # FIXME: Cancels timer with nil when second player leaves
   def leave(match, player) do
     match
     |> remove_player(player)
@@ -124,7 +123,7 @@ defmodule TicTacToe.Game.Match do
   end
 
   defp cancel_timer(match) do
-    Process.cancel_timer(match.timer)
+    if (is_reference(match.timer)), do: Process.cancel_timer(match.timer)
     %__MODULE__{match | timer: nil}
   end
 
