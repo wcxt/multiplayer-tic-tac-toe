@@ -2,8 +2,8 @@ defmodule TicTacToe.Game.Lobby do
   alias TicTacToe.Game.Supervisor
   alias TicTacToe.Game.Server
 
-  def create_server() do
-    case Supervisor.start_child(id: generate_room_id(6)) do
+  def create_server(type \\ :public) do
+    case Supervisor.start_child(id: generate_room_id(6), type: type) do
       {:ok, pid} -> pid
       {:error, {:already_started, pid}} -> pid
     end
@@ -18,17 +18,16 @@ defmodule TicTacToe.Game.Lobby do
 
   # FIXME: Inefficient use of selecting game servers
   def find_or_create_server() do
-    # Selects every game server pid and id from registry -> [{pid, id}]
-    TicTacToe.Registry.select([{{{Server, :"$1"}, :"$2", :_}, [], [:"$1"]}])
-    |> find_free_server()
-    |> maybe_start_new_server()
+    # Selects every game server pid and id from registry -> [id]
+    ids = TicTacToe.Registry.select([{{{Server, :"$1"}, :"$2", :_}, [], [:"$1"]}])
+
+    case find_free_server(ids) do
+      nil -> Server.id(create_server())
+      id -> id
+    end
   end
 
-  defp find_free_server(games) do
-    Enum.find(games, nil, fn id -> Server.is_open?(id) end)
+  defp find_free_server(ids) do
+    Enum.find(ids, nil, fn id -> Server.is_open?(id) end)
   end
-
-  # handle starting new server error
-  defp maybe_start_new_server(nil), do: Server.id(create_server())
-  defp maybe_start_new_server(id), do: id
 end

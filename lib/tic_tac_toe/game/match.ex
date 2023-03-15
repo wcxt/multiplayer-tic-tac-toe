@@ -3,6 +3,7 @@ defmodule TicTacToe.Game.Match do
   @turn_timeout 30_000
 
   defstruct status: :waiting,
+            type: :public,
             board: nil,
             turn: nil,
             players: %{},
@@ -12,11 +13,12 @@ defmodule TicTacToe.Game.Match do
 
   def new(opts) do
     id = Keyword.get(opts, :id)
+    type = Keyword.get(opts, :type, :public)
 
-    %__MODULE__{id: id, board: Map.from_keys(Enum.to_list(0..8), nil)}
+    %__MODULE__{id: id, type: type, board: Map.from_keys(Enum.to_list(0..8), nil)}
   end
 
-  def is_open?(match), do: match.status == :waiting
+  def is_open?(match), do: match.status == :waiting && match.type == :public
 
   def join(match, player) do
     match

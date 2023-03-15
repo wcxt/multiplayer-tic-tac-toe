@@ -37,7 +37,8 @@ defmodule TicTacToeWeb.StartLive do
   end
 
   def handle_event("create-room", _, socket) do
-    {:noreply, push_redirect(socket, to: "/game/#{Lobby.find_or_create_server()}")}
+    id = TicTacToe.Game.Server.id(Lobby.create_server(:private))
+    {:noreply, push_redirect(socket, to: "/game/#{id}")}
   end
 
   def handle_event("join-room", %{"code" => code}, socket) do
