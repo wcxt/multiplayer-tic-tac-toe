@@ -21,6 +21,7 @@ defmodule TicTacToeWeb.GameLive do
     {:ok, socket}
   end
 
+  # TODO: Cleanup heex
   @impl true
   def render(%{match: %{status: :playing}} = assigns) do
     ~H"""

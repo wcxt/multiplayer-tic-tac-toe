@@ -43,6 +43,7 @@ defmodule TicTacToe.Game.Match do
     end
   end
 
+  # FIXME: Cancels timer with nil when second player leaves
   def leave(match, player) do
     match
     |> remove_player(player)

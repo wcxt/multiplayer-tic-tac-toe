@@ -4,10 +4,13 @@ defmodule TicTacToeWeb.StartLive do
   require Logger
   alias TicTacToe.Game.Lobby
 
+  # TODO: Try a different method when it comes to changing username for not logged in
+  #       - current method: https://thepugautomatic.com/2020/05/persistent-session-data-in-phoenix-liveview/
   def mount(_, session, socket) do
     {:ok, assign(socket, :form, %{name: session["username"]})}
   end
 
+  # TODO: Cleanup heex
   def render(assigns) do
     ~H"""
     <p class="font-title text-8xl text-gray-600">Tic<span class="text-red-300">Tac</span>Toe</p>
@@ -30,11 +33,11 @@ defmodule TicTacToeWeb.StartLive do
   end
 
   def handle_event("play-online", _, socket) do
-    {:noreply, push_redirect(socket, to: "/game/#{Lobby.get()}")}
+    {:noreply, push_redirect(socket, to: "/game/#{Lobby.find_or_create_server()}")}
   end
 
   def handle_event("create-room", _, socket) do
-    {:noreply, push_redirect(socket, to: "/game/#{Lobby.get()}")}
+    {:noreply, push_redirect(socket, to: "/game/#{Lobby.find_or_create_server()}")}
   end
 
   def handle_event("join-room", %{"code" => code}, socket) do
