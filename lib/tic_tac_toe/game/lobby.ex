@@ -16,6 +16,10 @@ defmodule TicTacToe.Game.Lobby do
     |> binary_part(0, length)
   end
 
+  def find_server_by_id(id) do
+    TicTacToe.Registry.lookup({Server, id})
+  end
+
   # FIXME: Inefficient use of selecting game servers
   def find_or_create_server() do
     # Selects every game server pid and id from registry -> [id]

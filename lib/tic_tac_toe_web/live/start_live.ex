@@ -18,7 +18,7 @@ defmodule TicTacToeWeb.StartLive do
     <.button phx-click="create-room" class="mb-6" >Create room</.button>
     <.button phx-click="play-online" class="place-self-center" >Online</.button>
     <form id="join-form" phx-submit="join-room">
-      <input name="code" placeholder="Join room" class="p-3 rounded-full shadow-lg text-center" />
+      <input name="id" placeholder="Join room" class="p-3 rounded-full shadow-lg text-center" />
     </form>
     </div>
     <form id="name-form" phx-change="change-name" class="flex flex-col gap-6" phx-hook="NameInput">
@@ -41,10 +41,11 @@ defmodule TicTacToeWeb.StartLive do
     {:noreply, push_redirect(socket, to: "/game/#{id}")}
   end
 
-  def handle_event("join-room", %{"code" => code}, socket) do
-    Logger.info("Finding a server with given code: #{code}")
-    Logger.info("Redirect if server found flash error if server does not exist")
+  def handle_event("join-room", %{"id" => id}, socket) do
 
-    {:noreply, socket}
+    case Lobby.find_server_by_id(id) do
+      [{_, nil}] -> {:noreply, push_redirect(socket, to: "/game/#{id}")}
+      _ -> {:noreply, put_flash(socket, :error, "Incorrect room code")}
+    end
   end
 end
